@@ -1,6 +1,6 @@
 ---
 title: "Mini Data-Analysis Deliverable 1"
-output: html_document
+output: github_document
 ---
 
 # Welcome to your (maybe) first-ever data analysis project!
@@ -21,7 +21,7 @@ library(datateachr)
 library(tidyverse)
 ```
 
-3.  Make a repository in the <https://github.com/stat545ubc-2022> Organization. You will be working with this repository for the entire data analysis project. You can either make it public, or make it private and add the TA's and Lucy as collaborators. A link to help you create a private repository is available on the #collaborative-project Slack channel. 
+3.  Make a repository in the <https://github.com/stat545ubc-2022> Organization. You will be working with this repository for the entire data analysis project. You can either make it public, or make it private and add the TA's and Lucy as collaborators. A link to help you create a private repository is available on the #collaborative-project Slack channel.
 
 # Instructions
 
@@ -80,10 +80,10 @@ And that is exactly the first thing that you will do!
 
 <!-------------------------- Start your work below ---------------------------->
 
-1: CHOICE_1\_HERE\
-2: CHOICE_2\_HERE\
-3: CHOICE_3\_HERE\
-4: CHOICE_4\_HERE
+1: `steam_games`
+2: `cancer_sample`
+3: `apt_buildings`
+4: `parking_meters`
 
 <!----------------------------------------------------------------------------->
 
@@ -93,9 +93,74 @@ And that is exactly the first thing that you will do!
 
 <!-------------------------- Start your work below ---------------------------->
 
-```{r}
-### EXPLORE HERE ###
-steam_games
+```{r 1-2-constants}
+FONT_SIZE <- 18
+```
+
+```{r 1-2-functions}
+plot_na_frequency <- function(
+    data
+) {
+    plot_data <-
+        data |>
+        map_dbl(~ mean(is.na(.x))) |>
+        enframe(name = "column", value = "na_frequency")
+
+    plot <-
+        plot_data |>
+        ggplot(aes(x = fct_reorder(column, na_frequency), y = na_frequency)) +
+        geom_col() +
+        coord_flip() +
+        scale_y_continuous(
+            labels = scales::label_percent(),
+            limits = c(0, 1),
+            expand = expansion(add = c(0, 0.05))
+        ) +
+        theme_bw(FONT_SIZE) +
+        theme(panel.grid.major.y = element_blank()) +
+        labs(
+            x = "Column",
+            y = "NA frequency"
+        )
+
+    return(plot)
+}
+```
+
+```{r 1-2-steam-games}
+# `steam_games` attributes
+# Number of rows: 40 833
+# Number of columns: 21
+# Percentage of missing data for each column: Check plot below
+glimpse(steam_games)
+plot_na_frequency(steam_games)
+```
+
+```{r 1-2-cancer-sample}
+# `cancer_sample` attributes
+# Number of rows: 569
+# Number of columns: 32
+# Percentage of missing data for each column: Check plot below
+glimpse(cancer_sample)
+plot_na_frequency(cancer_sample)
+```
+
+```{r 1-2-apt-buildings}
+# `apt_buildings` attributes
+# Number of rows: 3 455
+# Number of columns: 37
+# Percentage of missing data for each column: Check plot below
+glimpse(apt_buildings)
+plot_na_frequency(apt_buildings)
+```
+
+```{r 1-2-parking-meters}
+# `parking_meters` attributes
+# Number of rows: 10 032
+# Number of columns: 22
+# Percentage of missing data for each column: Check plot below
+glimpse(parking_meters)
+plot_na_frequency(parking_meters)
 ```
 
 <!----------------------------------------------------------------------------->
@@ -104,11 +169,21 @@ steam_games
 
 <!-------------------------- Start your work below ---------------------------->
 
+I choose the 2 following datasets:
+
+- `steam_games`. It has the most data (around 40k rows compared to 10k of `parking_meters`, which is the second largest). Besides, I like gaming.
+- `cancer_sample`. It has no missing data, which should make it a cleaner and thus better dataset to be analyzed. Besides, my RA research topic is cancer, so I can relate to this dataset.
+
 <!----------------------------------------------------------------------------->
 
 1.4 Time for the final decision! Going back to the beginning, it's important to have an *end goal* in mind. For example, if I had chosen the `titanic` dataset for my project, I might've wanted to explore the relationship between survival and other variables. Try to think of 1 research question that you would want to answer with each dataset. Note them down below, and make your final choice based on what seems more interesting to you!
 
 <!-------------------------- Start your work below ---------------------------->
+
+- `steam_games`: Research question: how different game variables such as price and release date relate to its review.
+- `cancer_sample`: Research question: how different dimension measuraments like mean radius of nuclei and mean perimeter of nuclei relate to each other.
+
+I choose to analyze the `steam_games` dataset because it seemes more interesting. Besides, cleaning the `all_reviews` column seems like a good challange.
 
 <!----------------------------------------------------------------------------->
 
@@ -136,6 +211,115 @@ If we rewind and go back to the learning objectives, you'll see that by the end 
 2.2 For each of the 4 exercises that you complete, provide a *brief explanation* of why you chose that exercise in relation to your data (in other words, why does it make sense to do that?), and sufficient comments for a reader to understand your reasoning and code.
 
 <!-------------------------- Start your work below ---------------------------->
+
+2. Work
+
+The `all_reviews` column was essentially a sentence containing lots of different information, so I decided to extract the positive review frequency for further analysis.
+
+```{r 2-2-functions}
+extract_positive_frequency <- function(
+    reviews
+) {
+    reviews |>
+        str_extract("([:digit:]+)\\%") |>
+        str_remove("\\%") |>
+        as.numeric() |>
+        magrittr::divide_by(100)
+}
+```
+
+```{r 2-2-positive-review-frequency}
+# Create a new column containing the positive review frequency for each game.
+steam_games <-
+    steam_games |>
+    mutate(positive_review_frequency = extract_positive_frequency(all_reviews))
+```
+
+The `release_date` column was formated as string. I decided to format into `date` to make it easier to analyze.
+
+```{r 2-2-release-date}
+# Parse the `release_date` column to dates
+steam_games <-
+    steam_games |>
+    mutate(release_date = lubridate::mdy(release_date))
+```
+
+3. Work
+
+This dataset has a lot of missing values, so it is important to know how they are distributed.
+
+```{r 2-3}
+# Plot NA frequency of each column
+plot_na_frequency(steam_games)
+```
+
+All variables but `id` and `url` contain missing values. In particular `recent_reviews` and `mature_content` contain almost 75% of missing values.
+
+4. Work
+
+As stated in the research objetive, I want to understand how the reviews vary as a function of original price and release date.
+
+```{r 2-4-original-price}
+# Plot positive review frequency by original price
+# Original price is in the log scale given the data covers multiple orders of magnitude
+steam_games |>
+    filter(0 < original_price, original_price <= 1000) |>  # Remove free games and a very expensive game
+    ggplot(aes(x = original_price, y = positive_review_frequency)) +
+    geom_jitter(alpha = 0.1) +
+    geom_smooth() +
+    scale_x_log10(labels = scales::label_dollar()) +
+    scale_y_continuous(
+        labels = scales::label_percent(),
+        limits = c(0, 1)
+    ) +
+    theme_bw(FONT_SIZE) +
+    labs(
+        x = "Original price",
+        y = "Positive review frequency"
+    )
+```
+
+It seemes $10 games had, on average, a better review than other games.
+
+```{r 2-4-release-date}
+# Plot positive review frequency by release date
+steam_games |>
+    ggplot(aes(x = release_date, y = positive_review_frequency)) +
+    geom_point(alpha = 0.1) +
+    geom_smooth() +
+    scale_y_continuous(
+        labels = scales::label_percent(),
+        limits = c(0, 1)
+    ) +
+    theme_bw(FONT_SIZE) +
+    labs(
+        x = "Release date",
+        y = "Positive review frequency"
+    )
+```
+
+It seems the neab review positiveness decreased through the years but recently has been increasing.
+
+8. Work
+
+Since positive review frequency is the measure I am focusing on, it is imortant to understand its distribution.
+
+```{r 2-8}
+steam_games |>
+    ggplot(aes(x = positive_review_frequency)) +
+    geom_density() +
+    scale_x_continuous(
+        labels = scales::label_percent(),
+        limits = c(0, 1)
+    ) +
+    theme_bw(FONT_SIZE) +
+    labs(
+        x = "Positive review frequency",
+        y = "Density"
+    )
+```
+
+Review positiviness is left skewed.
 
 <!----------------------------------------------------------------------------->
 

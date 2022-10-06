@@ -80,10 +80,10 @@ And that is exactly the first thing that you will do!
 
 <!-------------------------- Start your work below ---------------------------->
 
-1: `steam_games`
-2: `cancer_sample`
-3: `apt_buildings`
-4: `parking_meters`
+1. `steam_games`
+2. `cancer_sample`
+3. `apt_buildings`
+4. `parking_meters`
 
 <!----------------------------------------------------------------------------->
 
@@ -101,11 +101,13 @@ FONT_SIZE <- 18
 plot_na_frequency <- function(
     data
 ) {
+    # Calculate NA frequency for each column
     plot_data <-
         data |>
         map_dbl(~ mean(is.na(.x))) |>
         enframe(name = "column", value = "na_frequency")
 
+    # Generate NA frequency plot
     plot <-
         plot_data |>
         ggplot(aes(x = fct_reorder(column, na_frequency), y = na_frequency)) +
@@ -123,6 +125,7 @@ plot_na_frequency <- function(
             y = "NA frequency"
         )
 
+    # Return plot
     return(plot)
 }
 ```
@@ -172,7 +175,7 @@ plot_na_frequency(parking_meters)
 I choose the 2 following datasets:
 
 - `steam_games`. It has the most data (around 40k rows compared to 10k of `parking_meters`, which is the second largest). Besides, I like gaming.
-- `cancer_sample`. It has no missing data, which should make it a cleaner and thus better dataset to be analyzed. Besides, my RA research topic is cancer, so I can relate to this dataset.
+- `cancer_sample`. It has no missing data, which should make it a cleaner, and thus better, dataset to be analyzed. Besides, my RA research topic is cancer, so I can relate to this dataset.
 
 <!----------------------------------------------------------------------------->
 
@@ -180,10 +183,10 @@ I choose the 2 following datasets:
 
 <!-------------------------- Start your work below ---------------------------->
 
-- `steam_games`: Research question: how different game variables such as price and release date relate to its review.
-- `cancer_sample`: Research question: how different dimension measuraments like mean radius of nuclei and mean perimeter of nuclei relate to each other.
+- `steam_games`: Research question: how do different game variables such as price relate to its review.
+- `cancer_sample`: Research question: how do different dimension measuraments like mean radius of nuclei and mean perimeter of nuclei relate to each other.
 
-I choose to analyze the `steam_games` dataset because it seemes more interesting. Besides, cleaning the `all_reviews` column seems like a good challange.
+I choose to analyze the `steam_games` dataset because it seems more interesting. Besides, cleaning the `all_reviews` column seems like a good challange.
 
 <!----------------------------------------------------------------------------->
 
@@ -214,14 +217,14 @@ If we rewind and go back to the learning objectives, you'll see that by the end 
 
 2. Work
 
-The `all_reviews` column was essentially a sentence containing lots of different information, so I decided to extract the positive review frequency for further analysis.
+Each value in the `all_reviews` column is essentially a sentence containing lots of different information, so I decided to extract the positive review frequency for further analysis.
 
 ```{r 2-2-functions}
 extract_positive_frequency <- function(
     reviews
 ) {
     reviews |>
-        str_extract("([:digit:]+)\\%") |>
+        str_extract("[:digit:]+\\%") |>
         str_remove("\\%") |>
         as.numeric() |>
         magrittr::divide_by(100)
@@ -233,39 +236,35 @@ extract_positive_frequency <- function(
 steam_games <-
     steam_games |>
     mutate(positive_review_frequency = extract_positive_frequency(all_reviews))
-```
 
-The `release_date` column was formated as string. I decided to format into `date` to make it easier to analyze.
-
-```{r 2-2-release-date}
-# Parse the `release_date` column to dates
-steam_games <-
-    steam_games |>
-    mutate(release_date = lubridate::mdy(release_date))
+# Print first 5 values to check new column
+steam_games |>
+    select(positive_review_frequency, all_reviews) |>
+    head()
 ```
 
 3. Work
 
-This dataset has a lot of missing values, so it is important to know how they are distributed.
+`steam_games` has a lot of missing values, so it is important to know how they are distributed.
 
 ```{r 2-3}
 # Plot NA frequency of each column
 plot_na_frequency(steam_games)
 ```
 
-All variables but `id` and `url` contain missing values. In particular `recent_reviews` and `mature_content` contain almost 75% of missing values.
+All variables but `id` and `url` contain missing values. Particularly, `recent_reviews` and `mature_content` are composed of almost 75% of missing values.
 
 4. Work
 
-As stated in the research objetive, I want to understand how the reviews vary as a function of original price and release date.
+As stated in the research objetive, I want to understand how the reviews vary as a function of original price.
 
 ```{r 2-4-original-price}
 # Plot positive review frequency by original price
 # Original price is in the log scale given the data covers multiple orders of magnitude
 steam_games |>
-    filter(0 < original_price, original_price <= 1000) |>  # Remove free games and a very expensive game
+    filter(0 < original_price, original_price <= 1000) |>  # Remove free games and very expensive game
     ggplot(aes(x = original_price, y = positive_review_frequency)) +
-    geom_jitter(alpha = 0.1) +
+    geom_point(alpha = 0.05) +
     geom_smooth() +
     scale_x_log10(labels = scales::label_dollar()) +
     scale_y_continuous(
@@ -279,32 +278,14 @@ steam_games |>
     )
 ```
 
-It seemes $10 games had, on average, a better review than other games.
-
-```{r 2-4-release-date}
-# Plot positive review frequency by release date
-steam_games |>
-    ggplot(aes(x = release_date, y = positive_review_frequency)) +
-    geom_point(alpha = 0.1) +
-    geom_smooth() +
-    scale_y_continuous(
-        labels = scales::label_percent(),
-        limits = c(0, 1)
-    ) +
-    theme_bw(FONT_SIZE) +
-    labs(
-        x = "Release date",
-        y = "Positive review frequency"
-    )
-```
-
-It seems the neab review positiveness decreased through the years but recently has been increasing.
+It seemes $10 games had, on average, a better review than other games. That being said, the mean positive review frequency does not change much for games with different original prices.
 
 8. Work
 
 Since positive review frequency is the measure I am focusing on, it is imortant to understand its distribution.
 
 ```{r 2-8}
+# Plot positive review frequency estimated density
 steam_games |>
     ggplot(aes(x = positive_review_frequency)) +
     geom_density() +
@@ -328,6 +309,13 @@ Review positiviness is left skewed.
 So far, you have chosen a dataset and gotten familiar with it through exploring the data. Now it's time to figure out 4 research questions that you would like to answer with your data! Write the 4 questions and any additional comments at the end of this deliverable. These questions are not necessarily set in stone - TAs will review them and give you feedback; therefore, you may choose to pursue them as they are for the rest of the project, or make modifications!
 
 <!--- *****START HERE***** --->
+
+My 4 research questions are:
+
+1. How price is related to positive review frequency.
+2. How release date is related to postive review frequency.
+3. How does number of reviews and postive review frequency relate together.
+4. How original price is related to discounted price.
 
 # Task 4: Process and summarize your data (13 points)
 
@@ -356,6 +344,185 @@ Ensure that the output of each operation is printed!
 Make sure it's clear what research question you are doing each operation for!
 
 <!------------------------- Start your work below ----------------------------->
+
+Research question 1, task 3
+
+Dividing original price in categories might help analyzing this variable later.
+
+```{r 4-1-1-1-3}
+# Divide original price into 5 categories: free, super cheap, cheap, normal and expensive
+steam_games <-
+    steam_games |>
+    mutate(original_price_category = case_when(
+        original_price == 0 ~ "free",
+        0 < original_price & original_price <= 1 ~ "super cheap",
+        1 < original_price & original_price <= 10 ~ "cheap",
+        10 < original_price & original_price <= 100 ~ "normal",
+        100 < original_price ~ "expensive"
+    ))
+```
+
+This may help later.
+
+Research question 1, task 6
+
+```{r 4-1-1-1-6}
+# Plot positive review frequency by original price
+# Original price is in the log scale given the data covers multiple orders of magnitude
+steam_games |>
+    filter(0 < original_price, original_price <= 1000) |>  # Remove free games and a very expensive game
+    ggplot(aes(x = original_price, y = positive_review_frequency)) +
+    geom_point(alpha = 0.05) +
+    geom_smooth() +
+    scale_x_log10(labels = scales::label_dollar()) +
+    scale_y_continuous(
+        labels = scales::label_percent(),
+        limits = c(0, 1)
+    ) +
+    theme_bw(FONT_SIZE) +
+    labs(
+        x = "Original price",
+        y = "Positive review frequency"
+    )
+```
+
+It seemes $10 games had, on average, a better review than other games. That being said, the mean positive review frequency does not change much for different original prices. This sure helped to answer the question!
+
+Research question 2, task 3
+
+The `release_date` column was formated as string. I decided to format into date to make it easier to analyze.
+
+```{r 4-1-1-2}
+# Parse the `release_date` column to dates
+steam_games <-
+    steam_games |>
+    mutate(release_date = lubridate::mdy(release_date))
+```
+
+```{r 4-1-1-2-3}
+# Divide release date by decade into 5 categories: super old, old, new, super new, to be released
+steam_games <-
+    steam_games |>
+    mutate(release_date_category = case_when(
+        release_date < lubridate::date("2000-01-01") ~ "super old",
+        lubridate::date("2000-01-01") < release_date & release_date <= lubridate::date("2010-01-01") ~ "old",
+        lubridate::date("2010-01-01") < release_date & release_date <= lubridate::date("2020-01-01") ~ "new",
+        lubridate::date("2010-01-01") < release_date & release_date <= lubridate::date("2023-01-01") ~ "super new",
+        lubridate::date("2023-01-01") < release_date ~ "to be released"
+    ))
+```
+
+This may help later.
+
+Research question 2, task 7
+
+```{r 4-1-1-2-7}
+# Plot positive review frequency by release date
+steam_games |>
+    ggplot(aes(x = release_date, y = positive_review_frequency)) +
+    geom_point(alpha = 0.05) +
+    geom_smooth() +
+    scale_y_continuous(
+        labels = scales::label_percent(),
+        limits = c(0, 1)
+    ) +
+    theme_bw(FONT_SIZE) +
+    labs(
+        x = "Release date",
+        y = "Positive review frequency"
+    )
+```
+
+It seems the review positiveness decreased through the years but recently has been increasing. Again, the mean positive review frequency does not change much for different release dates. This sure helped to answer the question!
+
+Research question 3, task 3
+
+The `all_reviews` column was essentially a sentence containing lots of different information, so I decided to extract the number of reviews for further analysis.
+
+```{r 4-1-1-3-3-functions}
+extract_number_of_reviews <- function(
+    reviews
+) {
+    reviews |>
+        str_extract("\\([[:digit:],]+\\)") |>
+        str_remove_all("\\(|\\)|,") |>
+        as.numeric()
+}
+```
+
+```{r 4-1-1-3-3-transformation}
+# Create a new column containing the number of reviews for each game.
+steam_games <-
+    steam_games |>
+    mutate(number_of_reviews = extract_number_of_reviews(all_reviews))
+```
+
+```{r 4-1-1-3-3}
+# Divide number of reviews into 3 categories: none, some, a lot
+steam_games <-
+    steam_games |>
+    mutate(number_of_reviews_category = case_when(
+        number_of_reviews == 0 ~ "none",
+        0 < number_of_reviews & number_of_reviews <= 1000 ~ "some",
+        1000 < number_of_reviews ~ "a lot"
+    ))
+```
+
+This may help later.
+
+Research question 3, task 6
+
+```{r 4-1-1-3-6}
+# Plot number of reviews by original price
+# Number of reviews and original price are in the log scale given the data covers multiple orders of magnitude
+steam_games |>
+    filter(0 < original_price, original_price <= 1000) |>  # Remove free games and a very expensive game
+    ggplot(aes(x = original_price, y = number_of_reviews)) +
+    geom_point(alpha = 0.05) +
+    geom_smooth() +
+    scale_x_log10(labels = scales::label_dollar()) +
+    scale_y_log10() +
+    theme_bw(FONT_SIZE) +
+    labs(
+        x = "Original price",
+        y = "Number of reviews"
+    )
+```
+
+Research question 4, task 1
+
+```{r 4-1-1-4-1}
+steam_games |>
+    group_by(original_price_category) |>
+    summarise(
+        range_min = min(discount_price, na.rm = TRUE),
+        range_max = max(discount_price, na.rm = TRUE),
+        mean = mean(discount_price, na.rm = TRUE),
+        median = median(discount_price, na.rm = TRUE),
+        sd = sd(discount_price, na.rm = TRUE)
+    )
+```
+
+This may help later.
+
+Research question 4, task 5
+
+```{r 4-1-1-4-5}
+steam_games |>
+    filter(original_price > 0, discount_price > 0) |>  # Remove free and discounted-free games
+    ggplot(aes(x = original_price, y = discount_price)) +
+    geom_point(alpha = 0.05) +
+    geom_abline(slope = 1, size = 1, color = "red") +
+    geom_smooth() +
+    scale_x_log10(label = scales::label_dollar()) +
+    scale_y_log10(label = scales::label_dollar()) +
+    coord_fixed(xlim = c(1, 1000), ylim = c(1, 1000)) +
+    theme_bw(FONT_SIZE) +
+    labs(
+        x = "Original price",
+        y = "Discount price"
+    )
+```
 
 <!----------------------------------------------------------------------------->
 

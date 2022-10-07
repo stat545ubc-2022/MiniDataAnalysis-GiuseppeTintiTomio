@@ -408,10 +408,10 @@ interesting to you!
 <!-------------------------- Start your work below ---------------------------->
 
 -   `steam_games`: Research question: how do different game variables
-    such as price relate to its review.
+    such as price relate to its review?
 -   `cancer_sample`: Research question: how do different dimension
     measuraments like mean radius of nuclei and mean perimeter of nuclei
-    relate to each other.
+    relate to each other?
 
 I choose to analyze the `steam_games` dataset because it seems more
 interesting. Besides, cleaning the `all_reviews` column seems like a
@@ -544,7 +544,7 @@ vary as a function of original price.
 # Plot positive review frequency by original price
 # Original price is in the log scale given the data covers multiple orders of magnitude
 steam_games |>
-    filter(0 < original_price, original_price <= 1000) |>  # Remove free games and very expensive game
+    filter(0 < original_price, original_price <= 1000) |>  # Remove free games and very expensive games
     ggplot(aes(x = original_price, y = positive_review_frequency)) +
     geom_point(alpha = 0.05) +
     geom_smooth() +
@@ -568,7 +568,7 @@ steam_games |>
 
 ![](mini-project-1_files/figure-gfm/2-4-original-price-1.png)<!-- -->
 
-It seemes \$10 games had, on average, a better review than other games.
+It seems \$10 games had, on average, a better review than other games.
 That being said, the mean positive review frequency does not change much
 for games with different original prices.
 
@@ -578,6 +578,7 @@ Since positive review frequency is the measure I am focusing on, it is
 imortant to understand its distribution.
 
 ``` r
+# Plot positive review frequency estimated density
 steam_games |>
     ggplot(aes(x = positive_review_frequency)) +
     geom_density() +
@@ -614,11 +615,11 @@ rest of the project, or make modifications!
 
 My 4 research questions are:
 
-1.  How price is related to positive review frequency.
-2.  How release date is related to postive review frequency.
+1.  How is price associated to positive review frequency?
+2.  How is release date associated to postive review frequency?
 3.  How does number of reviews and postive review frequency relate
-    together.
-4.  How original price is related to discounted price.
+    together?
+4.  How is original price associated to discounted price?
 
 # Task 4: Process and summarize your data (13 points)
 
@@ -671,8 +672,8 @@ for!
 
 Research question 1, task 3
 
-Dividing original price in categories might help analyzing this variable
-later.
+Dividing original price into categories might help analyzing this
+variable later.
 
 ``` r
 # Divide original price into 5 categories: free, super cheap, cheap, normal and expensive
@@ -691,11 +692,13 @@ This may help later.
 
 Research question 1, task 6
 
+The plot below is a visual way to try to answer the research question.
+
 ``` r
 # Plot positive review frequency by original price
 # Original price is in the log scale given the data covers multiple orders of magnitude
 steam_games |>
-    filter(0 < original_price, original_price <= 1000) |>  # Remove free games and a very expensive game
+    filter(0 < original_price, original_price <= 1000) |>  # Remove free games and very expensive games
     ggplot(aes(x = original_price, y = positive_review_frequency)) +
     geom_point(alpha = 0.05) +
     geom_smooth() +
@@ -719,13 +722,14 @@ steam_games |>
 
 ![](mini-project-1_files/figure-gfm/4-1-1-1-6-1.png)<!-- -->
 
-It seemes \$10 games had, on average, a better review than other games.
+It seems \$10 games had, on average, a better review than other games.
 That being said, the mean positive review frequency does not change much
-for different original prices. This sure helped to answer the question!
+for games with different original prices. This sure helped to answer the
+question!
 
 Research question 2, task 3
 
-The `release_date` column was formated as string. I decided to format
+The `release_date` column is formated as string. I decided to format it
 into date to make it easier to analyze.
 
 ``` r
@@ -736,6 +740,9 @@ steam_games <-
 ```
 
     ## Warning: 4418 failed to parse.
+
+Now that it is correctly formated, dividing release date into categories
+might help analyzing this variable later.
 
 ``` r
 # Divide release date by decade into 5 categories: super old, old, new, super new, to be released
@@ -754,8 +761,11 @@ This may help later.
 
 Research question 2, task 7
 
+The plot below is a visual way to try to answer the research question.
+
 ``` r
 # Plot positive review frequency by release date
+# Note that the overplotting makes changing the transparency necessary
 steam_games |>
     ggplot(aes(x = release_date, y = positive_review_frequency)) +
     geom_point(alpha = 0.05) +
@@ -781,14 +791,14 @@ steam_games |>
 
 It seems the review positiveness decreased through the years but
 recently has been increasing. Again, the mean positive review frequency
-does not change much for different release dates. This sure helped to
-answer the question!
+does not change much for games with different release dates. This sure
+helped to answer the question!
 
 Research question 3, task 3
 
-The `all_reviews` column was essentially a sentence containing lots of
-different information, so I decided to extract the number of reviews for
-further analysis.
+Each value in the `all_reviews` column is essentially a sentence
+containing lots of different information, so I decided to extract the
+number of reviews for further analysis.
 
 ``` r
 extract_number_of_reviews <- function(
@@ -808,6 +818,9 @@ steam_games <-
     mutate(number_of_reviews = extract_number_of_reviews(all_reviews))
 ```
 
+Now that it is correctly formated, dividing number of reviews into
+categories might help analyzing this variable later.
+
 ``` r
 # Divide number of reviews into 3 categories: none, some, a lot
 steam_games <-
@@ -823,11 +836,13 @@ This may help later.
 
 Research question 3, task 6
 
+The plot below is a visual way to try to answer the research question.
+
 ``` r
 # Plot number of reviews by original price
 # Number of reviews and original price are in the log scale given the data covers multiple orders of magnitude
 steam_games |>
-    filter(0 < original_price, original_price <= 1000) |>  # Remove free games and a very expensive game
+    filter(0 < original_price, original_price <= 1000) |>  # Remove free games and very expensive games
     ggplot(aes(x = original_price, y = number_of_reviews)) +
     geom_point(alpha = 0.05) +
     geom_smooth() +
@@ -848,7 +863,17 @@ steam_games |>
 
 ![](mini-project-1_files/figure-gfm/4-1-1-3-6-1.png)<!-- -->
 
+It seems \$50 games had, on average, a greater mean number of reviews
+than other games. Contrary to positive review frequency, the mean number
+of reviews changes a lot for games with different original prices.
+Perhaps those are the most popular games. This sure helped to answer the
+question!
+
 Research question 4, task 1
+
+So far, I have developed a good idea of the distribution of the
+`original_price` variable. So, it makes sense to calculate some
+statistics for `discount_price` for each category of `original_price`.
 
 ``` r
 steam_games |>
@@ -872,11 +897,18 @@ steam_games |>
     ## 5 super cheap                  0         708.  26.4   8.46  69.1
     ## 6 <NA>                         0.98      708.  27.4  18.0   36.7
 
-This may help later.
+This sure helped to answer the question (see discussion in the next
+task)!
 
 Research question 4, task 5
 
+The plot below is a visual way to try to answer the research question.
+
 ``` r
+# Plot discount price by original price
+# The plot is in a 1-to-1 scale to make it easier to compare the values
+# My expectation is that discount price will always be smaller than original price
+# That is, the dots should be below the red line (identity line)
 steam_games |>
     filter(original_price > 0, discount_price > 0) |>  # Remove free and discounted-free games
     ggplot(aes(x = original_price, y = discount_price)) +
@@ -897,6 +929,12 @@ steam_games |>
 
 ![](mini-project-1_files/figure-gfm/4-1-1-4-5-1.png)<!-- -->
 
+It seems that there are a lot of games whose discount price is bigger
+than the original price and this effect was more strong in cheap games
+(with respect to original price). Perhaps the price increased through
+the years and the discount was calculated based on the “last price
+available” instead of “first price” (original price).
+
 <!----------------------------------------------------------------------------->
 
 ### 1.2 (3 points)
@@ -908,6 +946,15 @@ refined, now that you’ve investigated your data a bit more? Which
 research questions are yielding interesting results?
 
 <!-------------------------- Start your work below ---------------------------->
+
+The analysis helped to answer the questions. For instance, it is clear
+that mean positive review frequency does not change much for games with
+different original prices but the number of reviews do.
+
+Furthermore, while investigating the last question, I learned about the
+relationship between original price and discount price but it does not
+make sense.
+
 <!----------------------------------------------------------------------------->
 
 ### Attribution

@@ -410,12 +410,12 @@ interesting to you!
 -   `steam_games`: Research question: how do different game variables
     such as price relate to its review?
 -   `cancer_sample`: Research question: how do different dimension
-    measuraments like mean radius of nuclei and mean perimeter of nuclei
+    measurements like mean radius of nuclei and mean perimeter of nuclei
     relate to each other?
 
 I choose to analyze the `steam_games` dataset because it seems more
 interesting. Besides, cleaning the `all_reviews` column seems like a
-good challange.
+good challenge.
 
 <!----------------------------------------------------------------------------->
 
@@ -537,8 +537,8 @@ missing values.
 
 4.  Work
 
-As stated in the research objetive, I want to understand how the reviews
-vary as a function of original price.
+As stated in the research objective, I want to understand how the
+reviews vary as a function of original price.
 
 ``` r
 # Plot positive review frequency by original price
@@ -575,7 +575,7 @@ for games with different original prices.
 8.  Work
 
 Since positive review frequency is the measure I am focusing on, it is
-imortant to understand its distribution.
+important to understand its distribution.
 
 ``` r
 # Plot positive review frequency estimated density
@@ -597,7 +597,7 @@ steam_games |>
 
 ![](mini-project-1_files/figure-gfm/2-8-1.png)<!-- -->
 
-Review positiviness is left skewed.
+Review positiveness is left skewed.
 
 <!----------------------------------------------------------------------------->
 
@@ -615,11 +615,11 @@ rest of the project, or make modifications!
 
 My 4 research questions are:
 
-1.  How is price associated to positive review frequency?
-2.  How is release date associated to postive review frequency?
-3.  How does number of reviews and postive review frequency relate
+1.  How is price associated with positive review frequency?
+2.  How is release date associated with positive review frequency?
+3.  How does number of reviews and positive review frequency relate
     together?
-4.  How is original price associated to discounted price?
+4.  How is original price associated with discount price?
 
 # Task 4: Process and summarize your data (13 points)
 
@@ -729,7 +729,7 @@ question!
 
 Research question 2, task 3
 
-The `release_date` column is formated as string. I decided to format it
+The `release_date` column is formatted as string. I decided to format it
 into date to make it easier to analyze.
 
 ``` r
@@ -741,8 +741,8 @@ steam_games <-
 
     ## Warning: 4418 failed to parse.
 
-Now that it is correctly formated, dividing release date into categories
-might help analyzing this variable later.
+Now that it is correctly formatted, dividing release date into
+categories might help analyzing this variable later.
 
 ``` r
 # Divide release date by decade into 5 categories: super old, old, new, super new, to be released
@@ -818,7 +818,7 @@ steam_games <-
     mutate(number_of_reviews = extract_number_of_reviews(all_reviews))
 ```
 
-Now that it is correctly formated, dividing number of reviews into
+Now that it is correctly formatted, dividing number of reviews into
 categories might help analyzing this variable later.
 
 ``` r

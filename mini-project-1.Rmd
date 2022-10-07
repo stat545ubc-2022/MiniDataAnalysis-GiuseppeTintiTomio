@@ -183,8 +183,8 @@ I choose the 2 following datasets:
 
 <!-------------------------- Start your work below ---------------------------->
 
-- `steam_games`: Research question: how do different game variables such as price relate to its review.
-- `cancer_sample`: Research question: how do different dimension measuraments like mean radius of nuclei and mean perimeter of nuclei relate to each other.
+- `steam_games`: Research question: how do different game variables such as price relate to its review?
+- `cancer_sample`: Research question: how do different dimension measuraments like mean radius of nuclei and mean perimeter of nuclei relate to each other?
 
 I choose to analyze the `steam_games` dataset because it seems more interesting. Besides, cleaning the `all_reviews` column seems like a good challange.
 
@@ -312,10 +312,10 @@ So far, you have chosen a dataset and gotten familiar with it through exploring 
 
 My 4 research questions are:
 
-1. How price is related to positive review frequency.
-2. How release date is related to postive review frequency.
-3. How does number of reviews and postive review frequency relate together.
-4. How original price is related to discounted price.
+1. How is price associated to positive review frequency?
+2. How is release date associated to postive review frequency?
+3. How does number of reviews and postive review frequency relate together?
+4. How is original price associated to discounted price?
 
 # Task 4: Process and summarize your data (13 points)
 

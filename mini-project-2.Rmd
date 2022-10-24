@@ -62,6 +62,20 @@ Based on the definition above, can you identify if your data is tidy or untidy? 
 
 <!--------------------------- Start your work below --------------------------->
 
+#### 2.1 answer
+
+```{r}
+# Load my data
+data(steam_games)
+
+# Take a look on the dataset structure
+glimpse(steam_games)
+```
+
+Since my dataset has `r ncol(steam_games)` columns, I will analyze the first 8 columns. Namely: `id`, `url`, `types`, `name`, `desc_snippet`, `recent_reviews`, `all_reviews` and `release_date`.
+
+Overall, the data is tidy. Each row is an observation (game), each column is a variable (game's id, game's url, game's type, etc) and each cell is a value. BUT a few columns could be even tidier. For instance, the first value of `all_reviews` reads as "`r steam_games$all_reviews[[1]]`". It contains a single value (namely a text summary of all reviews) but could be broken down into many variables to make the analysis easier. For example, it could be broken into `all_reviews_status` ("Very Positive"), `all_reviews_count` (42555), `all_reviews_positive_rate` (0.92).
+
 <!----------------------------------------------------------------------------->
 
 ### 2.2 (5 points)

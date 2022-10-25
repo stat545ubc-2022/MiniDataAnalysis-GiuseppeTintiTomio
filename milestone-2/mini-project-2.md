@@ -322,7 +322,8 @@ tidy_steam_games |>
 Do note that the other “string” columns could be parsed into new
 variables but it is not so clear how to do so. For instance, there are
 378 unique popular tags in the `popular_tags` column. I don’t think it
-would be helpful for the analysis.
+would be helpful for the analysis to create 378 columns (one for each
+tag).
 
 #### After untidying the tidied data
 
@@ -435,7 +436,7 @@ analysis_steam_games <-
     ## Warning: 4418 failed to parse.
 
 ``` r
-# Select a only the necessary variables for the analysis
+# Select only the necessary variables for the analysis
 analysis_steam_games <-
     analysis_steam_games |>
     select(
@@ -453,7 +454,7 @@ analysis_steam_games <-
 ```
 
 Do note that defined functions such as `parse_all_reviews` use many of
-the functions covared in the course
+the functions covared in the course.
 
 <!----------------------------------------------------------------------------->
 
@@ -535,6 +536,7 @@ Now, choose two of the following tasks.
 **Task Number**: 1
 
 ``` r
+# Manually define a new level ordering
 review_status_levels <- c(
     "Overwhelmingly Negative",
     "Very Negative",
@@ -552,7 +554,7 @@ review_status_levels <- c(
 # Order by manual ordering and then reverse so that negatives stays on the top and positives on the bottom of the plot
 analysis_steam_games |>
     filter(0 < original_price, original_price <= 1000) |>  # Remove free games and very expensive games
-    mutate(all_reviews_status = fct_rev(factor(all_reviews_status, review_status_levels))) |>
+    mutate(all_reviews_status = fct_rev(factor(all_reviews_status, review_status_levels))) |>  # Change ordering
     ggplot(aes(x = all_reviews_status, y = original_price)) +
     geom_boxplot() +
     scale_y_log10(labels = scales::label_dollar()) +

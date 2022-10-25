@@ -74,7 +74,7 @@ glimpse(steam_games)
 
 Since my dataset has `r ncol(steam_games)` columns, I will analyze the first 8 columns. Namely: `id`, `url`, `types`, `name`, `desc_snippet`, `recent_reviews`, `all_reviews` and `release_date`.
 
-Overall, the data is tidy. Each row is an observation (game), each column is a variable (game's id, game's url, game's type, etc) and each cell is a value. BUT a few columns could be even tidier. For instance, the first value of `all_reviews` reads as "`r steam_games$all_reviews[[1]]`". It contains a single value (namely a text summary of all reviews) but could be broken down into many variables to make the analysis easier. For example, it could be broken into `all_reviews_status` ("Very Positive"), `all_reviews_count` (42555), `all_reviews_positive_rate` (0.92).
+Overall, the data is tidy. Each row is an observation (game), each column is a variable (game's id, game's url, game's type, etc) and each cell is a value. BUT a few columns could be even tidier. For instance, the first value of `all_reviews` reads as "`r steam_games$all_reviews[[1]]`". It contains a single value (namely a text summary of all reviews) but could be broken down into many variables to make the analysis easier. For example, it could be broken into `all_reviews_status` ("Very Positive"), `all_reviews_count` (42555), `all_reviews_positive_frequency` (0.92).
 
 <!----------------------------------------------------------------------------->
 
@@ -118,7 +118,7 @@ parse_all_reviews <- function(
         str_remove_all(",") |>
         as.numeric()
 
-    all_reviews_positive_rate <-
+    all_reviews_positive_frequency <-
         matches[4] |>
         as.numeric() |>
         magrittr::divide_by(100)
@@ -126,7 +126,7 @@ parse_all_reviews <- function(
     results <- list(
         all_reviews_status = all_reviews_status,
         all_reviews_count = all_reviews_count,
-        all_reviews_positive_rate = all_reviews_positive_rate
+        all_reviews_positive_frequency = all_reviews_positive_frequency
     )
 
     return(results)
@@ -148,7 +148,7 @@ parse_recent_reviews <- function(
         str_remove_all(",") |>
         as.numeric()
 
-    recent_reviews_positive_rate <-
+    recent_reviews_positive_frequency <-
         matches[4] |>
         as.numeric() |>
         magrittr::divide_by(100)
@@ -156,14 +156,14 @@ parse_recent_reviews <- function(
     results <- list(
         recent_reviews_status = recent_reviews_status,
         recent_reviews_count = recent_reviews_count,
-        recent_reviews_positive_rate = recent_reviews_positive_rate
+        recent_reviews_positive_frequency = recent_reviews_positive_frequency
     )
 
     return(results)
 }
 
-# Parse `all_reviews` into `all_reviews_status`, `all_reviews_count` and `all_reviews_positive_rate`
-# Parse `recent_reviews` into `recent_reviews_status`, `recent_reviews_count` and `recent_reviews_positive_rate`
+# Parse `all_reviews` into `all_reviews_status`, `all_reviews_count` and `all_reviews_positive_frequency`
+# Parse `recent_reviews` into `recent_reviews_status`, `recent_reviews_count` and `recent_reviews_positive_frequency`
 tidy_steam_games <-
     steam_games |>
     rowwise() |>
@@ -201,19 +201,19 @@ Do note that the other "string" columns could be parsed into new variables but i
 #### After untidying the tidied data
 
 ```{r}
-# Deparse `all_reviews` from `all_reviews_status`, `all_reviews_count` and `all_reviews_positive_rate`
-# Deparse `recent_reviews` from `recent_reviews_status`, `recent_reviews_count` and `recent_reviews_positive_rate`
+# Deparse `all_reviews` from `all_reviews_status`, `all_reviews_count` and `all_reviews_positive_frequency`
+# Deparse `recent_reviews` from `recent_reviews_status`, `recent_reviews_count` and `recent_reviews_positive_frequency`
 untidy_steam_games <-
     tidy_steam_games |>
-    mutate(all_reviews = str_glue("{all_reviews_status},({all_reviews_count}),- {all_reviews_positive_rate * 100}% of the {all_reviews_count} user reviews for this game are positive.")) |>
-    mutate(recent_reviews = str_glue("{recent_reviews_status},({recent_reviews_count}),- {recent_reviews_positive_rate * 100}% of the {recent_reviews_count} user reviews in the last 30 days are positive\\.$")) |>
+    mutate(all_reviews = str_glue("{all_reviews_status},({all_reviews_count}),- {all_reviews_positive_frequency * 100}% of the {all_reviews_count} user reviews for this game are positive.")) |>
+    mutate(recent_reviews = str_glue("{recent_reviews_status},({recent_reviews_count}),- {recent_reviews_positive_frequency * 100}% of the {recent_reviews_count} user reviews in the last 30 days are positive\\.$")) |>
     select(
         - all_reviews_status,
         - all_reviews_count,
-        - all_reviews_positive_rate,
+        - all_reviews_positive_frequency,
         - recent_reviews_status,
         - recent_reviews_count,
-        - recent_reviews_positive_rate
+        - recent_reviews_positive_frequency
     )
 
 # Convert `release_date` back to string from date
@@ -235,14 +235,16 @@ Now, you should be more familiar with your data, and also have made progress in 
 
 <!-------------------------- Start your work below ---------------------------->
 
-1.  *FILL_THIS_IN*
-2.  *FILL_THIS_IN*
+1. How is price associated with positive review frequency?
+2. How is release date associated with positive review frequency?
 
 <!----------------------------------------------------------------------------->
 
 Explain your decision for choosing the above two research questions.
 
 <!--------------------------- Start your work below --------------------------->
+
+
 
 <!----------------------------------------------------------------------------->
 

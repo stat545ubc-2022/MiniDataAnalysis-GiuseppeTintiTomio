@@ -58,11 +58,11 @@ A reminder of the definition of *tidy* data:
 
 ### 2.1 (2.5 points)
 
-Based on the definition above, can you identify if your data is tidy or untidy? Go through all your columns, or if you have \>8 variables, just pick 8, and explain whether the data is untidy or tidy.
+Based on the definition above, can you identify if your data is tidy or untidy? Go through all your columns, or if you have \\>8 variables, just pick 8, and explain whether the data is untidy or tidy.
 
 <!--------------------------- Start your work below --------------------------->
 
-#### 2.1 answer
+#### Answer
 
 ```{r}
 # Load my data
@@ -87,6 +87,145 @@ If your data is untidy, then tidy it! Then, untidy it back to it's original stat
 Be sure to explain your reasoning for this task. Show us the "before" and "after".
 
 <!--------------------------- Start your work below --------------------------->
+```{r}
+# Load more packages
+library(lubridate)
+```
+
+#### Before tidying
+
+```{r}
+# Take a look on the dataset structure before tidying it
+glimpse(steam_games)
+```
+
+#### After tidying
+
+```{r}
+# Utility function
+parse_all_reviews <- function(
+    all_reviews
+) {
+    all_reviews_template <- "^([\\w ]+),\\(([\\d,]+)\\),- (\\d+)% of the [\\d,]+ user reviews for this game are positive.$"
+
+    matches <- str_match_all(all_reviews, all_reviews_template)
+    matches <- as.vector(matches[[1]])
+
+    all_reviews_status <- matches[2]
+
+    all_reviews_count <-
+        matches[3] |>
+        str_remove_all(",") |>
+        as.numeric()
+
+    all_reviews_positive_rate <-
+        matches[4] |>
+        as.numeric() |>
+        magrittr::divide_by(100)
+
+    results <- list(
+        all_reviews_status = all_reviews_status,
+        all_reviews_count = all_reviews_count,
+        all_reviews_positive_rate = all_reviews_positive_rate
+    )
+
+    return(results)
+}
+
+# Utility function
+parse_recent_reviews <- function(
+    recent_reviews
+) {
+    recent_reviews_template <- "^([\\w ]+),\\(([\\d,]+)\\),- (\\d+)% of the [\\d,]+ user reviews in the last 30 days are positive\\.$"
+
+    matches <- str_match_all(recent_reviews, recent_reviews_template)
+    matches <- as.vector(matches[[1]])
+
+    recent_reviews_status <- matches[2]
+
+    recent_reviews_count <-
+        matches[3] |>
+        str_remove_all(",") |>
+        as.numeric()
+
+    recent_reviews_positive_rate <-
+        matches[4] |>
+        as.numeric() |>
+        magrittr::divide_by(100)
+
+    results <- list(
+        recent_reviews_status = recent_reviews_status,
+        recent_reviews_count = recent_reviews_count,
+        recent_reviews_positive_rate = recent_reviews_positive_rate
+    )
+
+    return(results)
+}
+
+# Parse `all_reviews` into `all_reviews_status`, `all_reviews_count` and `all_reviews_positive_rate`
+# Parse `recent_reviews` into `recent_reviews_status`, `recent_reviews_count` and `recent_reviews_positive_rate`
+tidy_steam_games <-
+    steam_games |>
+    rowwise() |>
+    mutate(all_reviews_parsing = list(parse_all_reviews(all_reviews))) |>
+    mutate(recent_reviews_parsing = list(parse_recent_reviews(recent_reviews))) |>
+    unnest_wider(c(all_reviews_parsing, recent_reviews_parsing)) |>
+    select(
+        - all_reviews,
+        - recent_reviews
+    )
+
+# Parse `release_date` from string to date
+tidy_steam_games <-
+    tidy_steam_games |>
+    mutate(release_date = mdy(release_date))
+
+# Take a look on the dataset structure after tidying it
+tidy_steam_games |>
+    glimpse()
+```
+
+```{r, echo = FALSE}
+# Count unique popular tags
+unique_popular_tags_count <-
+    steam_games |>
+    pull(popular_tags) |>
+    str_split(",") %>%
+    do.call(c, .) |>
+    unique() |>
+    length()
+```
+
+Do note that the other "string" columns could be parsed into new variables but it is not so clear how to do so. For instance, there are `r unique_popular_tags_count` unique popular tags in the `popular_tags` column. I don't think it would be helpful for the analysis.
+
+#### After untidying the tidied data
+
+```{r}
+# Deparse `all_reviews` from `all_reviews_status`, `all_reviews_count` and `all_reviews_positive_rate`
+# Deparse `recent_reviews` from `recent_reviews_status`, `recent_reviews_count` and `recent_reviews_positive_rate`
+untidy_steam_games <-
+    tidy_steam_games |>
+    mutate(all_reviews = str_glue("{all_reviews_status},({all_reviews_count}),- {all_reviews_positive_rate * 100}% of the {all_reviews_count} user reviews for this game are positive.")) |>
+    mutate(recent_reviews = str_glue("{recent_reviews_status},({recent_reviews_count}),- {recent_reviews_positive_rate * 100}% of the {recent_reviews_count} user reviews in the last 30 days are positive\\.$")) |>
+    select(
+        - all_reviews_status,
+        - all_reviews_count,
+        - all_reviews_positive_rate,
+        - recent_reviews_status,
+        - recent_reviews_count,
+        - recent_reviews_positive_rate
+    )
+
+# Convert `release_date` back to string from date
+untidy_steam_games <-
+    untidy_steam_games |>
+    mutate(release_date = str_glue("{month(release_date, label = TRUE)} {day(release_date)}, year(release_date)}"))
+
+
+# Take a look on the dataset structure after untidying it
+untidy_steam_games |>
+    glimpse()
+```
 
 <!----------------------------------------------------------------------------->
 

@@ -90,12 +90,12 @@ be easier to understand when read manually.
 ### 2.1 (2.5 points)
 
 Based on the definition above, can you identify if your data is tidy or
-untidy? Go through all your columns, or if you have \>8 variables, just
-pick 8, and explain whether the data is untidy or tidy.
+untidy? Go through all your columns, or if you have \\\>8 variables,
+just pick 8, and explain whether the data is untidy or tidy.
 
 <!--------------------------- Start your work below --------------------------->
 
-#### 2.1 answer
+#### Answer
 
 ``` r
 # Load my data
@@ -136,7 +136,7 @@ Namely: `id`, `url`, `types`, `name`, `desc_snippet`, `recent_reviews`,
 Overall, the data is tidy. Each row is an observation (game), each
 column is a variable (game’s id, game’s url, game’s type, etc) and each
 cell is a value. BUT a few columns could be even tidier. For instance,
-the first value of `all_reviews` read as “Very Positive,(42,550),- 92%
+the first value of `all_reviews` reads as “Very Positive,(42,550),- 92%
 of the 42,550 user reviews for this game are positive.”. It contains a
 single value (namely a text summary of all reviews) but could be broken
 down into many variables to make the analysis easier. For example, it
@@ -157,6 +157,226 @@ Be sure to explain your reasoning for this task. Show us the “before”
 and “after”.
 
 <!--------------------------- Start your work below --------------------------->
+
+``` r
+# Load more packages
+library(lubridate)
+```
+
+    ## 
+    ## Attaching package: 'lubridate'
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     date, intersect, setdiff, union
+
+#### Before tidying
+
+``` r
+# Take a look on the dataset structure before tidying it
+glimpse(steam_games)
+```
+
+    ## Rows: 40,833
+    ## Columns: 21
+    ## $ id                       <dbl> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14…
+    ## $ url                      <chr> "https://store.steampowered.com/app/379720/DO…
+    ## $ types                    <chr> "app", "app", "app", "app", "app", "bundle", …
+    ## $ name                     <chr> "DOOM", "PLAYERUNKNOWN'S BATTLEGROUNDS", "BAT…
+    ## $ desc_snippet             <chr> "Now includes all three premium DLC packs (Un…
+    ## $ recent_reviews           <chr> "Very Positive,(554),- 89% of the 554 user re…
+    ## $ all_reviews              <chr> "Very Positive,(42,550),- 92% of the 42,550 u…
+    ## $ release_date             <chr> "May 12, 2016", "Dec 21, 2017", "Apr 24, 2018…
+    ## $ developer                <chr> "id Software", "PUBG Corporation", "Harebrain…
+    ## $ publisher                <chr> "Bethesda Softworks,Bethesda Softworks", "PUB…
+    ## $ popular_tags             <chr> "FPS,Gore,Action,Demons,Shooter,First-Person,…
+    ## $ game_details             <chr> "Single-player,Multi-player,Co-op,Steam Achie…
+    ## $ languages                <chr> "English,French,Italian,German,Spanish - Spai…
+    ## $ achievements             <dbl> 54, 37, 128, NA, NA, NA, 51, 55, 34, 43, 72, …
+    ## $ genre                    <chr> "Action", "Action,Adventure,Massively Multipl…
+    ## $ game_description         <chr> "About This Game Developed by id software, th…
+    ## $ mature_content           <chr> NA, "Mature Content Description  The develope…
+    ## $ minimum_requirements     <chr> "Minimum:,OS:,Windows 7/8.1/10 (64-bit versio…
+    ## $ recommended_requirements <chr> "Recommended:,OS:,Windows 7/8.1/10 (64-bit ve…
+    ## $ original_price           <dbl> 19.99, 29.99, 39.99, 44.99, 0.00, NA, 59.99, …
+    ## $ discount_price           <dbl> 14.99, NA, NA, NA, NA, 35.18, 70.42, 17.58, N…
+
+#### After tidying
+
+``` r
+# Utility function
+parse_all_reviews <- function(
+    all_reviews
+) {
+    all_reviews_template <- "^([\\w ]+),\\(([\\d,]+)\\),- (\\d+)% of the [\\d,]+ user reviews for this game are positive.$"
+
+    matches <- str_match_all(all_reviews, all_reviews_template)
+    matches <- as.vector(matches[[1]])
+
+    all_reviews_status <- matches[2]
+
+    all_reviews_count <-
+        matches[3] |>
+        str_remove_all(",") |>
+        as.numeric()
+
+    all_reviews_positive_rate <-
+        matches[4] |>
+        as.numeric() |>
+        magrittr::divide_by(100)
+
+    results <- list(
+        all_reviews_status = all_reviews_status,
+        all_reviews_count = all_reviews_count,
+        all_reviews_positive_rate = all_reviews_positive_rate
+    )
+
+    return(results)
+}
+
+# Utility function
+parse_recent_reviews <- function(
+    recent_reviews
+) {
+    recent_reviews_template <- "^([\\w ]+),\\(([\\d,]+)\\),- (\\d+)% of the [\\d,]+ user reviews in the last 30 days are positive\\.$"
+
+    matches <- str_match_all(recent_reviews, recent_reviews_template)
+    matches <- as.vector(matches[[1]])
+
+    recent_reviews_status <- matches[2]
+
+    recent_reviews_count <-
+        matches[3] |>
+        str_remove_all(",") |>
+        as.numeric()
+
+    recent_reviews_positive_rate <-
+        matches[4] |>
+        as.numeric() |>
+        magrittr::divide_by(100)
+
+    results <- list(
+        recent_reviews_status = recent_reviews_status,
+        recent_reviews_count = recent_reviews_count,
+        recent_reviews_positive_rate = recent_reviews_positive_rate
+    )
+
+    return(results)
+}
+
+# Parse `all_reviews` into `all_reviews_status`, `all_reviews_count` and `all_reviews_positive_rate`
+# Parse `recent_reviews` into `recent_reviews_status`, `recent_reviews_count` and `recent_reviews_positive_rate`
+tidy_steam_games <-
+    steam_games |>
+    rowwise() |>
+    mutate(all_reviews_parsing = list(parse_all_reviews(all_reviews))) |>
+    mutate(recent_reviews_parsing = list(parse_recent_reviews(recent_reviews))) |>
+    unnest_wider(c(all_reviews_parsing, recent_reviews_parsing)) |>
+    select(
+        - all_reviews,
+        - recent_reviews
+    )
+
+# Parse `release_date` from string to date
+tidy_steam_games <-
+    tidy_steam_games |>
+    mutate(release_date = mdy(release_date))
+```
+
+    ## Warning: 4418 failed to parse.
+
+``` r
+# Take a look on the dataset structure after tidying it
+tidy_steam_games |>
+    glimpse()
+```
+
+    ## Rows: 40,833
+    ## Columns: 25
+    ## $ id                           <dbl> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13…
+    ## $ url                          <chr> "https://store.steampowered.com/app/37972…
+    ## $ types                        <chr> "app", "app", "app", "app", "app", "bundl…
+    ## $ name                         <chr> "DOOM", "PLAYERUNKNOWN'S BATTLEGROUNDS", …
+    ## $ desc_snippet                 <chr> "Now includes all three premium DLC packs…
+    ## $ release_date                 <date> 2016-05-12, 2017-12-21, 2018-04-24, 2018…
+    ## $ developer                    <chr> "id Software", "PUBG Corporation", "Hareb…
+    ## $ publisher                    <chr> "Bethesda Softworks,Bethesda Softworks", …
+    ## $ popular_tags                 <chr> "FPS,Gore,Action,Demons,Shooter,First-Per…
+    ## $ game_details                 <chr> "Single-player,Multi-player,Co-op,Steam A…
+    ## $ languages                    <chr> "English,French,Italian,German,Spanish - …
+    ## $ achievements                 <dbl> 54, 37, 128, NA, NA, NA, 51, 55, 34, 43, …
+    ## $ genre                        <chr> "Action", "Action,Adventure,Massively Mul…
+    ## $ game_description             <chr> "About This Game Developed by id software…
+    ## $ mature_content               <chr> NA, "Mature Content Description  The deve…
+    ## $ minimum_requirements         <chr> "Minimum:,OS:,Windows 7/8.1/10 (64-bit ve…
+    ## $ recommended_requirements     <chr> "Recommended:,OS:,Windows 7/8.1/10 (64-bi…
+    ## $ original_price               <dbl> 19.99, 29.99, 39.99, 44.99, 0.00, NA, 59.…
+    ## $ discount_price               <dbl> 14.99, NA, NA, NA, NA, 35.18, 70.42, 17.5…
+    ## $ all_reviews_status           <chr> "Very Positive", "Mixed", "Mostly Positiv…
+    ## $ all_reviews_count            <dbl> 42550, 836608, 7030, 167115, 11481, NA, 9…
+    ## $ all_reviews_positive_rate    <dbl> 0.92, 0.49, 0.71, 0.61, 0.74, NA, 0.92, 0…
+    ## $ recent_reviews_status        <chr> "Very Positive", "Mixed", "Mixed", "Mixed…
+    ## $ recent_reviews_count         <dbl> 554, 6214, 166, 932, 287, NA, 408, 629, 1…
+    ## $ recent_reviews_positive_rate <dbl> 0.89, 0.49, 0.54, 0.57, 0.54, NA, 0.87, 0…
+
+Do note that the other “string” columns could be parsed into new
+variables but it is not so clear how to do so. For instance, there are
+378 unique popular tags in the `popular_tags` column. I don’t think it
+would be helpful for the analysis.
+
+#### After untidying the tidied data
+
+``` r
+# Deparse `all_reviews` from `all_reviews_status`, `all_reviews_count` and `all_reviews_positive_rate`
+# Deparse `recent_reviews` from `recent_reviews_status`, `recent_reviews_count` and `recent_reviews_positive_rate`
+untidy_steam_games <-
+    tidy_steam_games |>
+    mutate(all_reviews = str_glue("{all_reviews_status},({all_reviews_count}),- {all_reviews_positive_rate * 100}% of the {all_reviews_count} user reviews for this game are positive.")) |>
+    mutate(recent_reviews = str_glue("{recent_reviews_status},({recent_reviews_count}),- {recent_reviews_positive_rate * 100}% of the {recent_reviews_count} user reviews in the last 30 days are positive\\.$")) |>
+    select(
+        - all_reviews_status,
+        - all_reviews_count,
+        - all_reviews_positive_rate,
+        - recent_reviews_status,
+        - recent_reviews_count,
+        - recent_reviews_positive_rate
+    )
+
+# Convert `release_date` back to string from date
+untidy_steam_games <-
+    untidy_steam_games |>
+    mutate(release_date = str_glue("{month(release_date, label = TRUE)} {day(release_date)}, year(release_date)}"))
+
+
+# Take a look on the dataset structure after untidying it
+untidy_steam_games |>
+    glimpse()
+```
+
+    ## Rows: 40,833
+    ## Columns: 21
+    ## $ id                       <dbl> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14…
+    ## $ url                      <chr> "https://store.steampowered.com/app/379720/DO…
+    ## $ types                    <chr> "app", "app", "app", "app", "app", "bundle", …
+    ## $ name                     <chr> "DOOM", "PLAYERUNKNOWN'S BATTLEGROUNDS", "BAT…
+    ## $ desc_snippet             <chr> "Now includes all three premium DLC packs (Un…
+    ## $ release_date             <glue> "May 12, year(release_date)}", "Dec 21, year…
+    ## $ developer                <chr> "id Software", "PUBG Corporation", "Harebrain…
+    ## $ publisher                <chr> "Bethesda Softworks,Bethesda Softworks", "PUB…
+    ## $ popular_tags             <chr> "FPS,Gore,Action,Demons,Shooter,First-Person,…
+    ## $ game_details             <chr> "Single-player,Multi-player,Co-op,Steam Achie…
+    ## $ languages                <chr> "English,French,Italian,German,Spanish - Spai…
+    ## $ achievements             <dbl> 54, 37, 128, NA, NA, NA, 51, 55, 34, 43, 72, …
+    ## $ genre                    <chr> "Action", "Action,Adventure,Massively Multipl…
+    ## $ game_description         <chr> "About This Game Developed by id software, th…
+    ## $ mature_content           <chr> NA, "Mature Content Description  The develope…
+    ## $ minimum_requirements     <chr> "Minimum:,OS:,Windows 7/8.1/10 (64-bit versio…
+    ## $ recommended_requirements <chr> "Recommended:,OS:,Windows 7/8.1/10 (64-bit ve…
+    ## $ original_price           <dbl> 19.99, 29.99, 39.99, 44.99, 0.00, NA, 59.99, …
+    ## $ discount_price           <dbl> 14.99, NA, NA, NA, NA, 35.18, 70.42, 17.58, N…
+    ## $ all_reviews              <glue> "Very Positive,(42550),- 92% of the 42550 us…
+    ## $ recent_reviews           <glue> "Very Positive,(554),- 89% of the 554 user r…
+
 <!----------------------------------------------------------------------------->
 
 ### 2.3 (7.5 points)

@@ -64,10 +64,10 @@ body {
 </ul>
 <p><em>Tidy’ing</em> data is sometimes necessary because it can simplify computation. Other times it can be nice to organize data so that it can be easier to understand when read manually.</p>
 <h3 id="21-25-points">2.1 (2.5 points)</h3>
-<p>Based on the definition above, can you identify if your data is tidy or untidy? Go through all your columns, or if you have &gt;8 variables, just pick 8, and explain whether the data is untidy or tidy.</p>
+<p>Based on the definition above, can you identify if your data is tidy or untidy? Go through all your columns, or if you have \&gt;8 variables, just pick 8, and explain whether the data is untidy or tidy.</p>
 <!--------------------------- Start your work below --------------------------->
 
-<h4 id="21-answer">2.1 answer</h4>
+<h4 id="answer">Answer</h4>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load my data</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(steam_games)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -97,7 +97,7 @@ body {
 ## $ original_price           &lt;dbl&gt; 19.99, 29.99, 39.99, 44.99, 0.00, NA, 59.99, …
 ## $ discount_price           &lt;dbl&gt; 14.99, NA, NA, NA, NA, 35.18, 70.42, 17.58, N…</code></pre>
 <p>Since my dataset has 21 columns, I will analyze the first 8 columns. Namely: <code>id</code>, <code>url</code>, <code>types</code>, <code>name</code>, <code>desc_snippet</code>, <code>recent_reviews</code>, <code>all_reviews</code> and <code>release_date</code>.</p>
-<p>Overall, the data is tidy. Each row is an observation (game), each column is a variable (game’s id, game’s url, game’s type, etc) and each cell is a value. BUT a few columns could be even tidier. For instance, the first value of <code>all_reviews</code> read as “Very Positive,(42,550),- 92% of the 42,550 user reviews for this game are positive.”. It contains a single value (namely a text summary of all reviews) but could be broken down into many variables to make the analysis easier. For example, it could be broken into <code>all_reviews_status</code> (“Very Positive”), <code>all_reviews_count</code> (42555), <code>all_reviews_positive_rate</code> (0.92).</p>
+<p>Overall, the data is tidy. Each row is an observation (game), each column is a variable (game’s id, game’s url, game’s type, etc) and each cell is a value. BUT a few columns could be even tidier. For instance, the first value of <code>all_reviews</code> reads as “Very Positive,(42,550),- 92% of the 42,550 user reviews for this game are positive.”. It contains a single value (namely a text summary of all reviews) but could be broken down into many variables to make the analysis easier. For example, it could be broken into <code>all_reviews_status</code> (“Very Positive”), <code>all_reviews_count</code> (42555), <code>all_reviews_positive_rate</code> (0.92).</p>
 <!----------------------------------------------------------------------------->
 
 <h3 id="22-5-points">2.2 (5 points)</h3>
@@ -106,6 +106,198 @@ body {
 <p>Be sure to explain your reasoning for this task. Show us the “before” and “after”.</p>
 <!--------------------------- Start your work below --------------------------->
 
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load more packages</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span></code></pre></div>
+<pre><code>## 
+## Attaching package: &#39;lubridate&#39;
+
+## The following objects are masked from &#39;package:base&#39;:
+## 
+##     date, intersect, setdiff, union</code></pre>
+<h4 id="before-tidying">Before tidying</h4>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Take a look on the dataset structure before tidying it</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(steam_games)</span></code></pre></div>
+<pre><code>## Rows: 40,833
+## Columns: 21
+## $ id                       &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14…
+## $ url                      &lt;chr&gt; &quot;https://store.steampowered.com/app/379720/DO…
+## $ types                    &lt;chr&gt; &quot;app&quot;, &quot;app&quot;, &quot;app&quot;, &quot;app&quot;, &quot;app&quot;, &quot;bundle&quot;, …
+## $ name                     &lt;chr&gt; &quot;DOOM&quot;, &quot;PLAYERUNKNOWN&#39;S BATTLEGROUNDS&quot;, &quot;BAT…
+## $ desc_snippet             &lt;chr&gt; &quot;Now includes all three premium DLC packs (Un…
+## $ recent_reviews           &lt;chr&gt; &quot;Very Positive,(554),- 89% of the 554 user re…
+## $ all_reviews              &lt;chr&gt; &quot;Very Positive,(42,550),- 92% of the 42,550 u…
+## $ release_date             &lt;chr&gt; &quot;May 12, 2016&quot;, &quot;Dec 21, 2017&quot;, &quot;Apr 24, 2018…
+## $ developer                &lt;chr&gt; &quot;id Software&quot;, &quot;PUBG Corporation&quot;, &quot;Harebrain…
+## $ publisher                &lt;chr&gt; &quot;Bethesda Softworks,Bethesda Softworks&quot;, &quot;PUB…
+## $ popular_tags             &lt;chr&gt; &quot;FPS,Gore,Action,Demons,Shooter,First-Person,…
+## $ game_details             &lt;chr&gt; &quot;Single-player,Multi-player,Co-op,Steam Achie…
+## $ languages                &lt;chr&gt; &quot;English,French,Italian,German,Spanish - Spai…
+## $ achievements             &lt;dbl&gt; 54, 37, 128, NA, NA, NA, 51, 55, 34, 43, 72, …
+## $ genre                    &lt;chr&gt; &quot;Action&quot;, &quot;Action,Adventure,Massively Multipl…
+## $ game_description         &lt;chr&gt; &quot;About This Game Developed by id software, th…
+## $ mature_content           &lt;chr&gt; NA, &quot;Mature Content Description  The develope…
+## $ minimum_requirements     &lt;chr&gt; &quot;Minimum:,OS:,Windows 7/8.1/10 (64-bit versio…
+## $ recommended_requirements &lt;chr&gt; &quot;Recommended:,OS:,Windows 7/8.1/10 (64-bit ve…
+## $ original_price           &lt;dbl&gt; 19.99, 29.99, 39.99, 44.99, 0.00, NA, 59.99, …
+## $ discount_price           &lt;dbl&gt; 14.99, NA, NA, NA, NA, 35.18, 70.42, 17.58, N…</code></pre>
+<h4 id="after-tidying">After tidying</h4>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Utility function</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>parse_all_reviews <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    all_reviews</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    all_reviews_template <span class="ot">&lt;-</span> <span class="st">&quot;^([</span><span class="sc">\\</span><span class="st">w ]+),</span><span class="sc">\\</span><span class="st">(([</span><span class="sc">\\</span><span class="st">d,]+)</span><span class="sc">\\</span><span class="st">),- (</span><span class="sc">\\</span><span class="st">d+)% of the [</span><span class="sc">\\</span><span class="st">d,]+ user reviews for this game are positive.$&quot;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    matches <span class="ot">&lt;-</span> <span class="fu">str_match_all</span>(all_reviews, all_reviews_template)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    matches <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(matches[[<span class="dv">1</span>]])</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    all_reviews_status <span class="ot">&lt;-</span> matches[<span class="dv">2</span>]</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    all_reviews_count <span class="ot">&lt;-</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>        matches[<span class="dv">3</span>] <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">str_remove_all</span>(<span class="st">&quot;,&quot;</span>) <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">as.numeric</span>()</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    all_reviews_positive_rate <span class="ot">&lt;-</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        matches[<span class="dv">4</span>] <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        <span class="fu">as.numeric</span>() <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        magrittr<span class="sc">::</span><span class="fu">divide_by</span>(<span class="dv">100</span>)</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    results <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>        <span class="at">all_reviews_status =</span> all_reviews_status,</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>        <span class="at">all_reviews_count =</span> all_reviews_count,</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">all_reviews_positive_rate =</span> all_reviews_positive_rate</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(results)</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Utility function</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>parse_recent_reviews <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    recent_reviews</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>    recent_reviews_template <span class="ot">&lt;-</span> <span class="st">&quot;^([</span><span class="sc">\\</span><span class="st">w ]+),</span><span class="sc">\\</span><span class="st">(([</span><span class="sc">\\</span><span class="st">d,]+)</span><span class="sc">\\</span><span class="st">),- (</span><span class="sc">\\</span><span class="st">d+)% of the [</span><span class="sc">\\</span><span class="st">d,]+ user reviews in the last 30 days are positive</span><span class="sc">\\</span><span class="st">.$&quot;</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>    matches <span class="ot">&lt;-</span> <span class="fu">str_match_all</span>(recent_reviews, recent_reviews_template)</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>    matches <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(matches[[<span class="dv">1</span>]])</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>    recent_reviews_status <span class="ot">&lt;-</span> matches[<span class="dv">2</span>]</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>    recent_reviews_count <span class="ot">&lt;-</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>        matches[<span class="dv">3</span>] <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>        <span class="fu">str_remove_all</span>(<span class="st">&quot;,&quot;</span>) <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>        <span class="fu">as.numeric</span>()</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>    recent_reviews_positive_rate <span class="ot">&lt;-</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>        matches[<span class="dv">4</span>] <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>        <span class="fu">as.numeric</span>() <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>        magrittr<span class="sc">::</span><span class="fu">divide_by</span>(<span class="dv">100</span>)</span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>    results <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>        <span class="at">recent_reviews_status =</span> recent_reviews_status,</span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>        <span class="at">recent_reviews_count =</span> recent_reviews_count,</span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>        <span class="at">recent_reviews_positive_rate =</span> recent_reviews_positive_rate</span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(results)</span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a><span class="co"># Parse `all_reviews` into `all_reviews_status`, `all_reviews_count` and `all_reviews_positive_rate`</span></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a><span class="co"># Parse `recent_reviews` into `recent_reviews_status`, `recent_reviews_count` and `recent_reviews_positive_rate`</span></span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>tidy_steam_games <span class="ot">&lt;-</span></span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>    steam_games <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rowwise</span>() <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">all_reviews_parsing =</span> <span class="fu">list</span>(<span class="fu">parse_all_reviews</span>(all_reviews))) <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">recent_reviews_parsing =</span> <span class="fu">list</span>(<span class="fu">parse_recent_reviews</span>(recent_reviews))) <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unnest_wider</span>(<span class="fu">c</span>(all_reviews_parsing, recent_reviews_parsing)) <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(</span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a>        <span class="sc">-</span> all_reviews,</span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a>        <span class="sc">-</span> recent_reviews</span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a><span class="co"># Parse `release_date` from string to date</span></span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>tidy_steam_games <span class="ot">&lt;-</span></span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a>    tidy_steam_games <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">release_date =</span> <span class="fu">mdy</span>(release_date))</span></code></pre></div>
+<pre><code>## Warning: 4418 failed to parse.</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Take a look on the dataset structure after tidying it</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>tidy_steam_games <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">glimpse</span>()</span></code></pre></div>
+<pre><code>## Rows: 40,833
+## Columns: 25
+## $ id                           &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13…
+## $ url                          &lt;chr&gt; &quot;https://store.steampowered.com/app/37972…
+## $ types                        &lt;chr&gt; &quot;app&quot;, &quot;app&quot;, &quot;app&quot;, &quot;app&quot;, &quot;app&quot;, &quot;bundl…
+## $ name                         &lt;chr&gt; &quot;DOOM&quot;, &quot;PLAYERUNKNOWN&#39;S BATTLEGROUNDS&quot;, …
+## $ desc_snippet                 &lt;chr&gt; &quot;Now includes all three premium DLC packs…
+## $ release_date                 &lt;date&gt; 2016-05-12, 2017-12-21, 2018-04-24, 2018…
+## $ developer                    &lt;chr&gt; &quot;id Software&quot;, &quot;PUBG Corporation&quot;, &quot;Hareb…
+## $ publisher                    &lt;chr&gt; &quot;Bethesda Softworks,Bethesda Softworks&quot;, …
+## $ popular_tags                 &lt;chr&gt; &quot;FPS,Gore,Action,Demons,Shooter,First-Per…
+## $ game_details                 &lt;chr&gt; &quot;Single-player,Multi-player,Co-op,Steam A…
+## $ languages                    &lt;chr&gt; &quot;English,French,Italian,German,Spanish - …
+## $ achievements                 &lt;dbl&gt; 54, 37, 128, NA, NA, NA, 51, 55, 34, 43, …
+## $ genre                        &lt;chr&gt; &quot;Action&quot;, &quot;Action,Adventure,Massively Mul…
+## $ game_description             &lt;chr&gt; &quot;About This Game Developed by id software…
+## $ mature_content               &lt;chr&gt; NA, &quot;Mature Content Description  The deve…
+## $ minimum_requirements         &lt;chr&gt; &quot;Minimum:,OS:,Windows 7/8.1/10 (64-bit ve…
+## $ recommended_requirements     &lt;chr&gt; &quot;Recommended:,OS:,Windows 7/8.1/10 (64-bi…
+## $ original_price               &lt;dbl&gt; 19.99, 29.99, 39.99, 44.99, 0.00, NA, 59.…
+## $ discount_price               &lt;dbl&gt; 14.99, NA, NA, NA, NA, 35.18, 70.42, 17.5…
+## $ all_reviews_status           &lt;chr&gt; &quot;Very Positive&quot;, &quot;Mixed&quot;, &quot;Mostly Positiv…
+## $ all_reviews_count            &lt;dbl&gt; 42550, 836608, 7030, 167115, 11481, NA, 9…
+## $ all_reviews_positive_rate    &lt;dbl&gt; 0.92, 0.49, 0.71, 0.61, 0.74, NA, 0.92, 0…
+## $ recent_reviews_status        &lt;chr&gt; &quot;Very Positive&quot;, &quot;Mixed&quot;, &quot;Mixed&quot;, &quot;Mixed…
+## $ recent_reviews_count         &lt;dbl&gt; 554, 6214, 166, 932, 287, NA, 408, 629, 1…
+## $ recent_reviews_positive_rate &lt;dbl&gt; 0.89, 0.49, 0.54, 0.57, 0.54, NA, 0.87, 0…</code></pre>
+<p>Do note that the other “string” columns could be parsed into new variables but it is not so clear how to do so. For instance, there are 378 unique popular tags in the <code>popular_tags</code> column. I don’t think it would be helpful for the analysis.</p>
+<h4 id="after-untidying-the-tidied-data">After untidying the tidied data</h4>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Deparse `all_reviews` from `all_reviews_status`, `all_reviews_count` and `all_reviews_positive_rate`</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Deparse `recent_reviews` from `recent_reviews_status`, `recent_reviews_count` and `recent_reviews_positive_rate`</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>untidy_steam_games <span class="ot">&lt;-</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    tidy_steam_games <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">all_reviews =</span> <span class="fu">str_glue</span>(<span class="st">&quot;{all_reviews_status},({all_reviews_count}),- {all_reviews_positive_rate * 100}% of the {all_reviews_count} user reviews for this game are positive.&quot;</span>)) <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">recent_reviews =</span> <span class="fu">str_glue</span>(<span class="st">&quot;{recent_reviews_status},({recent_reviews_count}),- {recent_reviews_positive_rate * 100}% of the {recent_reviews_count} user reviews in the last 30 days are positive</span><span class="sc">\\</span><span class="st">.$&quot;</span>)) <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        <span class="sc">-</span> all_reviews_status,</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        <span class="sc">-</span> all_reviews_count,</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        <span class="sc">-</span> all_reviews_positive_rate,</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        <span class="sc">-</span> recent_reviews_status,</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        <span class="sc">-</span> recent_reviews_count,</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>        <span class="sc">-</span> recent_reviews_positive_rate</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert `release_date` back to string from date</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>untidy_steam_games <span class="ot">&lt;-</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    untidy_steam_games <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">release_date =</span> <span class="fu">str_glue</span>(<span class="st">&quot;{month(release_date, label = TRUE)} {day(release_date)}, year(release_date)}&quot;</span>))</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Take a look on the dataset structure after untidying it</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>untidy_steam_games <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">glimpse</span>()</span></code></pre></div>
+<pre><code>## Rows: 40,833
+## Columns: 21
+## $ id                       &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14…
+## $ url                      &lt;chr&gt; &quot;https://store.steampowered.com/app/379720/DO…
+## $ types                    &lt;chr&gt; &quot;app&quot;, &quot;app&quot;, &quot;app&quot;, &quot;app&quot;, &quot;app&quot;, &quot;bundle&quot;, …
+## $ name                     &lt;chr&gt; &quot;DOOM&quot;, &quot;PLAYERUNKNOWN&#39;S BATTLEGROUNDS&quot;, &quot;BAT…
+## $ desc_snippet             &lt;chr&gt; &quot;Now includes all three premium DLC packs (Un…
+## $ release_date             &lt;glue&gt; &quot;May 12, year(release_date)}&quot;, &quot;Dec 21, year…
+## $ developer                &lt;chr&gt; &quot;id Software&quot;, &quot;PUBG Corporation&quot;, &quot;Harebrain…
+## $ publisher                &lt;chr&gt; &quot;Bethesda Softworks,Bethesda Softworks&quot;, &quot;PUB…
+## $ popular_tags             &lt;chr&gt; &quot;FPS,Gore,Action,Demons,Shooter,First-Person,…
+## $ game_details             &lt;chr&gt; &quot;Single-player,Multi-player,Co-op,Steam Achie…
+## $ languages                &lt;chr&gt; &quot;English,French,Italian,German,Spanish - Spai…
+## $ achievements             &lt;dbl&gt; 54, 37, 128, NA, NA, NA, 51, 55, 34, 43, 72, …
+## $ genre                    &lt;chr&gt; &quot;Action&quot;, &quot;Action,Adventure,Massively Multipl…
+## $ game_description         &lt;chr&gt; &quot;About This Game Developed by id software, th…
+## $ mature_content           &lt;chr&gt; NA, &quot;Mature Content Description  The develope…
+## $ minimum_requirements     &lt;chr&gt; &quot;Minimum:,OS:,Windows 7/8.1/10 (64-bit versio…
+## $ recommended_requirements &lt;chr&gt; &quot;Recommended:,OS:,Windows 7/8.1/10 (64-bit ve…
+## $ original_price           &lt;dbl&gt; 19.99, 29.99, 39.99, 44.99, 0.00, NA, 59.99, …
+## $ discount_price           &lt;dbl&gt; 14.99, NA, NA, NA, NA, 35.18, 70.42, 17.58, N…
+## $ all_reviews              &lt;glue&gt; &quot;Very Positive,(42550),- 92% of the 42550 us…
+## $ recent_reviews           &lt;glue&gt; &quot;Very Positive,(554),- 89% of the 554 user r…</code></pre>
 <!----------------------------------------------------------------------------->
 
 <h3 id="23-75-points">2.3 (7.5 points)</h3>

@@ -244,13 +244,50 @@ Explain your decision for choosing the above two research questions.
 
 <!--------------------------- Start your work below --------------------------->
 
-
+I think positive review frequency is a good metric for game quality (number of reviews would simply measure game popularity). Moreover, I expect release date and price to be very impactful covariates. The questions that I chose relate these three important variables and should help to  better understand the data.
 
 <!----------------------------------------------------------------------------->
 
 Now, try to choose a version of your data that you think will be appropriate to answer these 2 questions. Use between 4 and 8 functions that we've covered so far (i.e. by filtering, cleaning, tidy'ing, dropping irrelevant columns, etc.).
 
 <!--------------------------- Start your work below --------------------------->
+
+```{r}
+# Parse `all_reviews` into `all_reviews_status`, `all_reviews_count` and `all_reviews_positive_frequency`
+# Parse `recent_reviews` into `recent_reviews_status`, `recent_reviews_count` and `recent_reviews_positive_frequency`
+analysis_steam_games <-
+    steam_games |>
+    rowwise() |>
+    mutate(all_reviews_parsing = list(parse_all_reviews(all_reviews))) |>
+    mutate(recent_reviews_parsing = list(parse_recent_reviews(recent_reviews))) |>
+    unnest_wider(c(all_reviews_parsing, recent_reviews_parsing)) |>
+    select(
+        - all_reviews,
+        - recent_reviews
+    )
+
+# Parse `release_date` from string to date
+analysis_steam_games <-
+    analysis_steam_games |>
+    mutate(release_date = mdy(release_date))
+
+# Select a few variables for the analysis
+analysis_steam_games <-
+    analysis_steam_games |>
+    select(
+        name,
+        release_date,
+        original_price,
+        all_reviews_positive_frequency
+    )
+
+# Remove rows with NA
+analysis_steam_games <-
+    analysis_steam_games |>
+    drop_na()
+
+# Note: Do note that defined functions such as `parse_all_reviews` use many of the functions covared in the course
+```
 
 <!----------------------------------------------------------------------------->
 

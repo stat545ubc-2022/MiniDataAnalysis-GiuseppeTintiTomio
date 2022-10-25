@@ -397,9 +397,9 @@ Pick a research question, and pick a variable of interest (we'll call it "Y") th
 
 <!-------------------------- Start your work below ---------------------------->
 
-**Research Question**: FILL_THIS_IN
+**Research Question**: How is price associated with positive review frequency?
 
-**Variable of interest**: FILL_THIS_IN
+**Variable of interest**: `all_reviews_positive_frequency`
 
 <!----------------------------------------------------------------------------->
 
@@ -415,6 +415,12 @@ Fit a model or run a hypothesis test that provides insight on this variable with
 
 <!-------------------------- Start your work below ---------------------------->
 
+```{r}
+model <- lm(all_reviews_positive_frequency ~ original_price, data = analysis_steam_games)
+
+print(summary(model))
+```
+
 <!----------------------------------------------------------------------------->
 
 ## 2.2 (5 points)
@@ -426,6 +432,12 @@ Produce something relevant from your fitted model: either predictions on Y, or a
 -   Obtain your results using the `broom` package if possible. If your model is not compatible with the broom function you're needing, then you can obtain your results by some other means, but first indicate which broom function is not compatible.
 
 <!-------------------------- Start your work below ---------------------------->
+
+```{r}
+broom::tidy(model)
+```
+
+Here, I'm calculating the p-value for the variable `original_price`. It is available at "row `original_price`" (second row) and "column `p.value`" (last column).
 
 <!----------------------------------------------------------------------------->
 

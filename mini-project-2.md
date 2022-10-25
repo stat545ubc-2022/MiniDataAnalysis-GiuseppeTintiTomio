@@ -442,7 +442,8 @@ analysis_steam_games <-
         name,
         release_date,
         original_price,
-        all_reviews_positive_frequency
+        all_reviews_positive_frequency,
+        all_reviews_status
     )
 
 # Remove rows with NA
@@ -469,6 +470,25 @@ you’d like). If you don’t have such a plot, you’ll need to make one.
 Place the code for your plot below.
 
 <!-------------------------- Start your work below ---------------------------->
+
+``` r
+# Plot original price by positive review frequency (as status)
+# Original price is in the log scale given the data covers multiple orders of magnitude
+analysis_steam_games |>
+    filter(0 < original_price, original_price <= 1000) |>  # Remove free games and very expensive games
+    ggplot(aes(x = all_reviews_status, y = original_price)) +
+    geom_boxplot() +
+    scale_y_log10(labels = scales::label_dollar()) +
+    coord_flip() +
+    theme_bw(20) +
+    labs(
+        x = "Positive review frequency (as status)",
+        y = "Original price"
+    )
+```
+
+![](mini-project-2_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
 <!----------------------------------------------------------------------------->
 
 Now, choose two of the following tasks.
@@ -512,12 +532,69 @@ Now, choose two of the following tasks.
 
 <!-------------------------- Start your work below ---------------------------->
 
-**Task Number**: FILL_THIS_IN
+**Task Number**: 1
+
+``` r
+review_status_levels <- c(
+    "Overwhelmingly Negative",
+    "Very Negative",
+    "Negative",
+    "Mostly Negative",
+    "Mixed",
+    "Mostly Positive",
+    "Positive",
+    "Very Positive",
+    "Overwhelmingly Positive"
+)
+
+# Plot original price by positive review frequency (as status)
+# Original price is in the log scale given the data covers multiple orders of magnitude
+# Order by manual ordering and then reverse so that negatives stays on the top and positives on the bottom of the plot
+analysis_steam_games |>
+    filter(0 < original_price, original_price <= 1000) |>  # Remove free games and very expensive games
+    mutate(all_reviews_status = fct_rev(factor(all_reviews_status, review_status_levels))) |>
+    ggplot(aes(x = all_reviews_status, y = original_price)) +
+    geom_boxplot() +
+    scale_y_log10(labels = scales::label_dollar()) +
+    coord_flip() +
+    theme_bw(20) +
+    labs(
+        x = "Positive review frequency (as status)",
+        y = "Original price"
+    )
+```
+
+![](mini-project-2_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+Explanation: I chose to go with a manual ordering for
+`all_reviews_status` because it seemed the intuitive ordering for the
+data. I could have infered the ordering from
+`all_reviews_positive_frequency` by using
+`fct_reorder(all_reviews_status, all_reviews_positive_frequency)` as I
+suspect that `all_reviews_status` is a function of
+`all_reviews_positive_frequency` in the original data but this solution
+would be more fragile (some testing that I did placed “Positive” after
+“Very positive” for instance). Finally, I reversed the order so that the
+negative levels stay on the top and positive levels stay on the bottom
+of the plot.
 
 <!----------------------------------------------------------------------------->
 <!-------------------------- Start your work below ---------------------------->
 
-**Task Number**: FILL_THIS_IN
+**Task Number**: 3
+
+``` r
+analysis_steam_games <-
+    analysis_steam_games |>
+    mutate(release_date_week_day = wday(release_date))
+```
+
+Do note that `release_date` has already been parsed to a date column in
+section 2.2.
+
+Explanation: Investigating the day of the week of the release date might
+be insightful because people have more free time on the weekend to play
+games.
 
 <!----------------------------------------------------------------------------->
 

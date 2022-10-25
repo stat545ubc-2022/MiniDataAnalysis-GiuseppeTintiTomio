@@ -442,8 +442,8 @@ body {
 <p>Pick a research question, and pick a variable of interest (we’ll call it “Y”) that’s relevant to the research question. Indicate these.</p>
 <!-------------------------- Start your work below ---------------------------->
 
-<p><strong>Research Question</strong>: FILL_THIS_IN</p>
-<p><strong>Variable of interest</strong>: FILL_THIS_IN</p>
+<p><strong>Research Question</strong>: How is price associated with positive review frequency?</p>
+<p><strong>Variable of interest</strong>: <code>all_reviews_positive_frequency</code></p>
 <!----------------------------------------------------------------------------->
 
 <h2 id="21-5-points">2.1 (5 points)</h2>
@@ -458,6 +458,28 @@ body {
 </ul>
 <!-------------------------- Start your work below ---------------------------->
 
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">lm</span>(all_reviews_positive_frequency <span class="sc">~</span> original_price, <span class="at">data =</span> analysis_steam_games)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">summary</span>(model))</span></code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = all_reviews_positive_frequency ~ original_price, 
+##     data = analysis_steam_games)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.74696 -0.10693  0.04306  0.14307  0.25307 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)    7.469e-01  1.440e-03 518.853   &lt;2e-16 ***
+## original_price 2.659e-07  2.848e-07   0.934     0.35    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.1853 on 16564 degrees of freedom
+## Multiple R-squared:  5.263e-05,  Adjusted R-squared:  -7.738e-06 
+## F-statistic: 0.8718 on 1 and 16564 DF,  p-value: 0.3505</code></pre>
 <!----------------------------------------------------------------------------->
 
 <h2 id="22-5-points-1">2.2 (5 points)</h2>
@@ -469,6 +491,13 @@ body {
 </ul>
 <!-------------------------- Start your work below ---------------------------->
 
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>broom<span class="sc">::</span><span class="fu">tidy</span>(model)</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 5
+##   term              estimate   std.error statistic p.value
+##   &lt;chr&gt;                &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+## 1 (Intercept)    0.747       0.00144       519.      0    
+## 2 original_price 0.000000266 0.000000285     0.934   0.350</code></pre>
+<p>Here, I’m calculating the p-value for the variable <code>original_price</code>. It is available at “row <code>original_price</code>” (second row) and “column <code>p.value</code>” (last column).</p>
 <!----------------------------------------------------------------------------->
 
 <h1 id="task-4-reading-and-writing-data">Task 4: Reading and writing data</h1>
@@ -481,6 +510,23 @@ body {
 </ul>
 <!-------------------------- Start your work below ---------------------------->
 
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>steam_games <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">original_price_category =</span> <span class="fu">case_when</span>(</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>        original_price <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">&quot;free&quot;</span>,</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>        <span class="dv">0</span> <span class="sc">&lt;</span> original_price <span class="sc">&amp;</span> original_price <span class="sc">&lt;=</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">&quot;super cheap&quot;</span>,</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span> <span class="sc">&lt;</span> original_price <span class="sc">&amp;</span> original_price <span class="sc">&lt;=</span> <span class="dv">10</span> <span class="sc">~</span> <span class="st">&quot;cheap&quot;</span>,</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>        <span class="dv">10</span> <span class="sc">&lt;</span> original_price <span class="sc">&amp;</span> original_price <span class="sc">&lt;=</span> <span class="dv">100</span> <span class="sc">~</span> <span class="st">&quot;normal&quot;</span>,</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>        <span class="dv">100</span> <span class="sc">&lt;</span> original_price <span class="sc">~</span> <span class="st">&quot;expensive&quot;</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    )) <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(original_price_category) <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">range_min =</span> <span class="fu">min</span>(discount_price, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">range_max =</span> <span class="fu">max</span>(discount_price, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">mean =</span> <span class="fu">mean</span>(discount_price, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">median =</span> <span class="fu">median</span>(discount_price, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">sd =</span> <span class="fu">sd</span>(discount_price, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">write_csv</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;output/discout_price_by_original_price_category.csv&quot;</span>))</span></code></pre></div>
 <!----------------------------------------------------------------------------->
 
 <h2 id="32-5-points">3.2 (5 points)</h2>
@@ -490,6 +536,10 @@ body {
 </ul>
 <!-------------------------- Start your work below ---------------------------->
 
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>model <span class="sc">|</span><span class="er">&gt;</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">saveRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;output/model.rds&quot;</span>))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>read_model <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;output/model.rds&quot;</span>))</span></code></pre></div>
 <!----------------------------------------------------------------------------->
 
 <h1 id="tidy-repository">Tidy Repository</h1>

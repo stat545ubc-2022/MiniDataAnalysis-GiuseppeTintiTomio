@@ -607,9 +607,10 @@ Pick a research question, and pick a variable of interest (we’ll call it
 
 <!-------------------------- Start your work below ---------------------------->
 
-**Research Question**: FILL_THIS_IN
+**Research Question**: How is price associated with positive review
+frequency?
 
-**Variable of interest**: FILL_THIS_IN
+**Variable of interest**: `all_reviews_positive_frequency`
 
 <!----------------------------------------------------------------------------->
 
@@ -635,6 +636,33 @@ specifics in STAT 545.
     -   You could use `lm()` to test for significance of regression.
 
 <!-------------------------- Start your work below ---------------------------->
+
+``` r
+model <- lm(all_reviews_positive_frequency ~ original_price, data = analysis_steam_games)
+
+print(summary(model))
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = all_reviews_positive_frequency ~ original_price, 
+    ##     data = analysis_steam_games)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -0.74696 -0.10693  0.04306  0.14307  0.25307 
+    ## 
+    ## Coefficients:
+    ##                 Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)    7.469e-01  1.440e-03 518.853   <2e-16 ***
+    ## original_price 2.659e-07  2.848e-07   0.934     0.35    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 0.1853 on 16564 degrees of freedom
+    ## Multiple R-squared:  5.263e-05,  Adjusted R-squared:  -7.738e-06 
+    ## F-statistic: 0.8718 on 1 and 16564 DF,  p-value: 0.3505
+
 <!----------------------------------------------------------------------------->
 
 ## 2.2 (5 points)
@@ -652,6 +680,21 @@ Y, or a single value like a regression coefficient or a p-value.
     which broom function is not compatible.
 
 <!-------------------------- Start your work below ---------------------------->
+
+``` r
+broom::tidy(model)
+```
+
+    ## # A tibble: 2 × 5
+    ##   term              estimate   std.error statistic p.value
+    ##   <chr>                <dbl>       <dbl>     <dbl>   <dbl>
+    ## 1 (Intercept)    0.747       0.00144       519.      0    
+    ## 2 original_price 0.000000266 0.000000285     0.934   0.350
+
+Here, I’m calculating the p-value for the variable `original_price`. It
+is available at “row `original_price`” (second row) and “column
+`p.value`” (last column).
+
 <!----------------------------------------------------------------------------->
 
 # Task 4: Reading and writing data
@@ -674,6 +717,27 @@ function.
     file, and remake it simply by knitting this Rmd file.
 
 <!-------------------------- Start your work below ---------------------------->
+
+``` r
+steam_games |>
+    mutate(original_price_category = case_when(
+        original_price == 0 ~ "free",
+        0 < original_price & original_price <= 1 ~ "super cheap",
+        1 < original_price & original_price <= 10 ~ "cheap",
+        10 < original_price & original_price <= 100 ~ "normal",
+        100 < original_price ~ "expensive"
+    )) |>
+    group_by(original_price_category) |>
+    summarise(
+        range_min = min(discount_price, na.rm = TRUE),
+        range_max = max(discount_price, na.rm = TRUE),
+        mean = mean(discount_price, na.rm = TRUE),
+        median = median(discount_price, na.rm = TRUE),
+        sd = sd(discount_price, na.rm = TRUE)
+    ) |>
+    write_csv(here::here("output/discout_price_by_original_price_category.csv"))
+```
+
 <!----------------------------------------------------------------------------->
 
 ## 3.2 (5 points)
@@ -686,6 +750,14 @@ Use the functions `saveRDS()` and `readRDS()`.
     here.
 
 <!-------------------------- Start your work below ---------------------------->
+
+``` r
+model |>
+    saveRDS(here::here("output/model.rds"))
+
+read_model <- readRDS(here::here("output/model.rds"))
+```
+
 <!----------------------------------------------------------------------------->
 
 # Tidy Repository

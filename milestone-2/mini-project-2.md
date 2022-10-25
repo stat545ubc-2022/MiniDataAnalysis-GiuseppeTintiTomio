@@ -586,6 +586,7 @@ of the plot.
 **Task Number**: 3
 
 ``` r
+# Extract week day from `release_date`
 analysis_steam_games <-
     analysis_steam_games |>
     mutate(release_date_week_day = wday(release_date))
@@ -640,8 +641,10 @@ specifics in STAT 545.
 <!-------------------------- Start your work below ---------------------------->
 
 ``` r
+# Fit a model
 model <- lm(all_reviews_positive_frequency ~ original_price, data = analysis_steam_games)
 
+# Print the model summary
 print(summary(model))
 ```
 
@@ -684,6 +687,7 @@ Y, or a single value like a regression coefficient or a p-value.
 <!-------------------------- Start your work below ---------------------------->
 
 ``` r
+# Print tidied model summary
 broom::tidy(model)
 ```
 
@@ -721,7 +725,9 @@ function.
 <!-------------------------- Start your work below ---------------------------->
 
 ``` r
+# Creata and save table
 steam_games |>
+    # Create `original_price_category` categories
     mutate(original_price_category = case_when(
         original_price == 0 ~ "free",
         0 < original_price & original_price <= 1 ~ "super cheap",
@@ -729,6 +735,7 @@ steam_games |>
         10 < original_price & original_price <= 100 ~ "normal",
         100 < original_price ~ "expensive"
     )) |>
+    # Create summary table
     group_by(original_price_category) |>
     summarise(
         range_min = min(discount_price, na.rm = TRUE),
@@ -737,6 +744,7 @@ steam_games |>
         median = median(discount_price, na.rm = TRUE),
         sd = sd(discount_price, na.rm = TRUE)
     ) |>
+    # Save table
     write_csv(here::here("output/discout_price_by_original_price_category.csv"))
 ```
 
@@ -754,9 +762,11 @@ Use the functions `saveRDS()` and `readRDS()`.
 <!-------------------------- Start your work below ---------------------------->
 
 ``` r
+# Save model
 model |>
     saveRDS(here::here("output/model.rds"))
 
+# Load model
 read_model <- readRDS(here::here("output/model.rds"))
 ```
 

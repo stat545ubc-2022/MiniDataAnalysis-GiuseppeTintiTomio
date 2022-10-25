@@ -454,6 +454,26 @@ Take a summary table that you made from Milestone 1 (Task 4.2), and write it as 
 
 <!-------------------------- Start your work below ---------------------------->
 
+```{r}
+steam_games |>
+    mutate(original_price_category = case_when(
+        original_price == 0 ~ "free",
+        0 < original_price & original_price <= 1 ~ "super cheap",
+        1 < original_price & original_price <= 10 ~ "cheap",
+        10 < original_price & original_price <= 100 ~ "normal",
+        100 < original_price ~ "expensive"
+    )) |>
+    group_by(original_price_category) |>
+    summarise(
+        range_min = min(discount_price, na.rm = TRUE),
+        range_max = max(discount_price, na.rm = TRUE),
+        mean = mean(discount_price, na.rm = TRUE),
+        median = median(discount_price, na.rm = TRUE),
+        sd = sd(discount_price, na.rm = TRUE)
+    ) |>
+    write_csv(here::here("output/discout_price_by_original_price_category.csv"))
+```
+
 <!----------------------------------------------------------------------------->
 
 ## 3.2 (5 points)
@@ -463,6 +483,13 @@ Write your model object from Task 3 to an R binary file (an RDS), and load it ag
 -   The same robustness and reproducibility criteria as in 3.1 apply here.
 
 <!-------------------------- Start your work below ---------------------------->
+
+```{r}
+model |>
+    saveRDS(here::here("output/model.rds"))
+
+read_model <- readRDS(here::here("output/model.rds"))
+```
 
 <!----------------------------------------------------------------------------->
 

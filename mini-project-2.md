@@ -435,7 +435,7 @@ analysis_steam_games <-
     ## Warning: 4418 failed to parse.
 
 ``` r
-# Select a few variables for the analysis
+# Select a only the necessary variables for the analysis
 analysis_steam_games <-
     analysis_steam_games |>
     select(
@@ -449,9 +449,10 @@ analysis_steam_games <-
 analysis_steam_games <-
     analysis_steam_games |>
     drop_na()
-
-# Note: Do note that defined functions such as `parse_all_reviews` use many of the functions covared in the course
 ```
+
+Do note that defined functions such as `parse_all_reviews` use many of
+the functions covared in the course
 
 <!----------------------------------------------------------------------------->
 

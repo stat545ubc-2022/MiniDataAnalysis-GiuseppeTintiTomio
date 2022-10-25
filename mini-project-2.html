@@ -337,7 +337,7 @@ body {
 <span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    analysis_steam_games <span class="sc">|</span><span class="er">&gt;</span></span>
 <span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">release_date =</span> <span class="fu">mdy</span>(release_date))</span></code></pre></div>
 <pre><code>## Warning: 4418 failed to parse.</code></pre>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Select a few variables for the analysis</span></span>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Select a only the necessary variables for the analysis</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>analysis_steam_games <span class="ot">&lt;-</span></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    analysis_steam_games <span class="sc">|</span><span class="er">&gt;</span></span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(</span>
@@ -350,9 +350,8 @@ body {
 <span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove rows with NA</span></span>
 <span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>analysis_steam_games <span class="ot">&lt;-</span></span>
 <span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    analysis_steam_games <span class="sc">|</span><span class="er">&gt;</span></span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">drop_na</span>()</span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: Do note that defined functions such as `parse_all_reviews` use many of the functions covared in the course</span></span></code></pre></div>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">drop_na</span>()</span></code></pre></div>
+<p>Do note that defined functions such as <code>parse_all_reviews</code> use many of the functions covared in the course</p>
 <!----------------------------------------------------------------------------->
 
 <h1 id="task-2-special-data-types-10">Task 2: Special Data Types (10)</h1>
